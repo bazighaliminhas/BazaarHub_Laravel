@@ -9,7 +9,7 @@ class Order extends Model
     protected $fillable = [
         'user_id','order_number','full_name','phone','address','city',
         'consumer_number','tran_auth_id','payment_method','payment_status',
-        'subtotal','shipping','total','status','notes',
+        'subtotal','shipping','total','status',
     ];
 
     public function user()       { return $this->belongsTo(User::class); }
