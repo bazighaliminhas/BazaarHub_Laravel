@@ -23,7 +23,10 @@ class Product extends Model
         return asset('storage/' . $this->thumbnail);
     }
 
-    public function vendor()   { return $this->belongsTo(Vendor::class); }
-    public function category() { return $this->belongsTo(Category::class); }
-    public function images()   { return $this->hasMany(ProductImage::class); }
+    public function vendor()     { return $this->belongsTo(Vendor::class); }
+    public function category()   { return $this->belongsTo(Category::class); }
+    public function images()     { return $this->hasMany(ProductImage::class); }
+
+    // ✅ NEW: OrderItems relationship add kiya
+    public function orderItems() { return $this->hasMany(OrderItem::class); }
 }

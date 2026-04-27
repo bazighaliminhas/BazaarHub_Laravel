@@ -33,7 +33,17 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        // ✅ Step 1: Har product ke order_items delete karo
+        foreach ($category->products as $product) {
+            $product->orderItems()->delete();
+        }
+
+        // ✅ Step 2: Category ke saare products delete karo
+        $category->products()->delete();
+
+        // ✅ Step 3: Ab category delete karo
         $category->delete();
+
         return back()->with('success', '🗑️ Category deleted!');
     }
 }

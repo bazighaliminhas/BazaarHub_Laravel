@@ -39,7 +39,6 @@ class ProductController extends Controller
             'status'      => 'required|in:active,inactive',
         ]);
 
-        // Handle image upload
         $thumbnailPath = $request->file('thumbnail')
             ->store('products', 'public');
 
@@ -63,7 +62,6 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        // Security: vendor can only edit their own products
         if ($product->vendor_id !== auth('vendor')->id()) {
             abort(403, 'Unauthorized.');
         }
@@ -100,9 +98,7 @@ class ProductController extends Controller
             'status'      => $request->status,
         ];
 
-        // Replace image if new one uploaded
         if ($request->hasFile('thumbnail')) {
-            // Delete old if stored locally
             if ($product->thumbnail && !str_starts_with($product->thumbnail, 'http')) {
                 \Storage::disk('public')->delete($product->thumbnail);
             }
@@ -121,10 +117,15 @@ class ProductController extends Controller
             abort(403, 'Unauthorized.');
         }
 
+        // ✅ Step 1: Pehle related order_items delete karo
+        $product->orderItems()->delete();
+
+        // ✅ Step 2: Thumbnail delete karo
         if ($product->thumbnail && !str_starts_with($product->thumbnail, 'http')) {
             \Storage::disk('public')->delete($product->thumbnail);
         }
 
+        // ✅ Step 3: Ab product delete karo
         $product->delete();
 
         return redirect()->route('vendor.products.index')

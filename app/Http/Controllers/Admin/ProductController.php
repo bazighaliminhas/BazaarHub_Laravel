@@ -101,10 +101,17 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        // ✅ Pehle related order_items delete karo
+        $product->orderItems()->delete();
+
+        // ✅ Thumbnail delete karo
         if ($product->thumbnail && !str_starts_with($product->thumbnail,'http')) {
             \Storage::disk('public')->delete($product->thumbnail);
         }
+
+        // ✅ Ab product delete karo
         $product->delete();
+
         return redirect()->route('admin.products.index')
             ->with('success', '🗑️ Product deleted!');
     }
