@@ -21,14 +21,27 @@
         .sidebar {
             width: var(--sidebar-width);
             background: var(--admin-sidebar);
-            min-height: 100vh;
-            position: fixed; top: 0; left: 0;
-            z-index: 1000; overflow-y: auto;
-            transition: all 0.3s;
+            height: 100vh;              /* ✅ Fixed height = full screen */
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1000;
+            overflow-y: scroll !important;  /* ✅ FORCE scroll */
+            overflow-x: hidden;
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
         }
+
+        /* ✅ Scrollbar style — thin & dark */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
         .sidebar-brand {
             padding: 22px 20px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
         }
         .sidebar-brand h5 { color: white; font-weight: 700; font-size: 20px; margin: 0; }
         .sidebar-brand span { color: #FF6B35; }
@@ -44,6 +57,7 @@
             background: rgba(255,255,255,0.04);
             border-radius: 12px;
             display: flex; align-items: center; gap: 12px;
+            flex-shrink: 0;
         }
         .admin-avatar {
             width: 44px; height: 44px;
@@ -55,7 +69,21 @@
         .admin-name  { color: white; font-weight: 600; font-size: 14px; margin: 0; }
         .admin-role  { color: rgba(255,255,255,0.4); font-size: 11px; }
 
-        .sidebar-nav { padding: 6px 12px 20px; }
+        /* ✅ Nav takes remaining space and pushes logout to bottom */
+        .sidebar-nav {
+            padding: 6px 12px 0;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* ✅ Logout always sticks to bottom */
+        .sidebar-nav .logout-wrapper {
+            margin-top: auto;
+            padding: 12px 0 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
         .nav-section {
             color: rgba(255,255,255,0.25);
             font-size: 10px; font-weight: 700;
@@ -82,6 +110,19 @@
             padding: 2px 8px; border-radius: 20px;
         }
         .sidebar-link.active .nav-count { background: rgba(255,255,255,0.25); color: white; }
+
+        /* ✅ Logout button */
+        .logout-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 10px;
+            color: rgba(255,255,255,0.55);
+            font-size: 14px; font-weight: 500;
+            transition: all 0.2s;
+            background: transparent; border: none;
+            width: 100%; text-align: left; cursor: pointer;
+        }
+        .logout-btn:hover { background: rgba(231,76,60,0.15); color: #e74c3c; }
+        .logout-btn i { font-size: 17px; width: 22px; flex-shrink: 0; color: #e74c3c; }
 
         /* ── Main ── */
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
@@ -208,11 +249,14 @@
 
 {{-- ══ SIDEBAR ══ --}}
 <div class="sidebar" id="sidebar">
+
+    {{-- Brand --}}
     <div class="sidebar-brand">
         <h5>🛒 Bazaar<span>Hub</span></h5>
         <div class="admin-badge">Super Admin</div>
     </div>
 
+    {{-- Profile --}}
     <div class="admin-profile">
         <div class="admin-avatar">
             {{ strtoupper(substr(auth('web')->user()->name, 0, 1)) }}
@@ -223,13 +267,17 @@
         </div>
     </div>
 
+    {{-- Nav Links --}}
     <nav class="sidebar-nav">
+
+        {{-- OVERVIEW --}}
         <div class="nav-section">Overview</div>
         <a href="{{ route('admin.dashboard') }}"
            class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Dashboard
         </a>
 
+        {{-- MANAGEMENT --}}
         <div class="nav-section">Management</div>
         <a href="{{ route('admin.vendors.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.vendors.*') ? 'active' : '' }}">
@@ -257,18 +305,33 @@
             <span class="nav-count">{{ \App\Models\Category::count() }}</span>
         </a>
 
-        <div class="nav-section">System</div>
-        <a href="{{ route('home') }}" class="sidebar-link" target="_blank">
-            <i class="bi bi-globe"></i> View Website
+        {{-- ATTENDANCE --}}
+        <div class="nav-section">Attendance</div>
+        <a href="{{ route('admin.attendance.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.attendance.index') ? 'active' : '' }}">
+            <i class="bi bi-fingerprint"></i> Attendance
+            <span class="nav-count">{{ \App\Models\Attendance::whereDate('punch_time', today())->count() }}</span>
         </a>
-        <form action="{{ route('admin.logout') }}" method="POST" class="mt-1">
-            @csrf
-            <button type="submit" class="sidebar-link w-100 border-0 text-start"
-                    style="background:transparent;">
-                <i class="bi bi-box-arrow-left" style="color:#e74c3c;"></i>
-                <span>Logout</span>
-            </button>
-        </form>
+        <a href="{{ route('admin.attendance.report') }}"
+           class="sidebar-link {{ request()->routeIs('admin.attendance.report') ? 'active' : '' }}">
+            <i class="bi bi-bar-chart-line-fill"></i> Reports
+        </a>
+
+        {{-- ✅ SYSTEM + LOGOUT — always at bottom --}}
+        <div class="logout-wrapper">
+            <div class="nav-section" style="padding-top:0;">System</div>
+            <a href="{{ route('home') }}" class="sidebar-link" target="_blank">
+                <i class="bi bi-globe"></i> View Website
+            </a>
+            <form action="{{ route('admin.logout') }}" method="POST" class="mt-1">
+                @csrf
+                <button type="submit" class="logout-btn">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+
     </nav>
 </div>
 

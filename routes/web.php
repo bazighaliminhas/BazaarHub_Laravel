@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProduct;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomer;
 use App\Http\Controllers\Admin\OrderController as AdminOrder;
 use App\Http\Controllers\Admin\CategoryController as AdminCategory;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendance; // ✅ NEW
 
 // =============================================
 // PUBLIC ROUTES (Customer Facing)
@@ -42,12 +43,12 @@ Route::prefix('customer')->name('customer.')->middleware('customer.auth')->group
     Route::post('/cart/remove',  [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/update',  [CartController::class, 'update'])->name('cart.update');
     Route::post('/checkout',     [CartController::class, 'checkout'])->name('checkout');
-    // Checkout & Orders
-Route::get('/checkout',          [\App\Http\Controllers\Customer\CheckoutController::class, 'index'])->name('checkout');
-Route::post('/checkout/inquiry', [\App\Http\Controllers\Customer\CheckoutController::class, 'inquiry'])->name('checkout.inquiry');
-Route::post('/checkout/pay',     [\App\Http\Controllers\Customer\CheckoutController::class, 'processPayment'])->name('checkout.pay');
-Route::get('/order/{orderNumber}/success', [\App\Http\Controllers\Customer\CheckoutController::class, 'success'])->name('order.success');
 
+    // Checkout & Orders
+    Route::get('/checkout',          [\App\Http\Controllers\Customer\CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/checkout/inquiry', [\App\Http\Controllers\Customer\CheckoutController::class, 'inquiry'])->name('checkout.inquiry');
+    Route::post('/checkout/pay',     [\App\Http\Controllers\Customer\CheckoutController::class, 'processPayment'])->name('checkout.pay');
+    Route::get('/order/{orderNumber}/success', [\App\Http\Controllers\Customer\CheckoutController::class, 'success'])->name('order.success');
 });
 
 // =============================================
@@ -129,4 +130,15 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
 
     // Orders — read only
     Route::get('/orders', [AdminOrder::class, 'index'])->name('orders.index');
+
+    // =============================================
+    // ATTENDANCE (UFace800) ✅ NEW
+    // =============================================
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/',        [AdminAttendance::class, 'index'])->name('index');
+        Route::get('/sync',    [AdminAttendance::class, 'sync'])->name('sync');
+        Route::get('/report',  [AdminAttendance::class, 'report'])->name('report');
+        Route::delete('/{id}', [AdminAttendance::class, 'destroy'])->name('destroy');
+    });
+
 });
